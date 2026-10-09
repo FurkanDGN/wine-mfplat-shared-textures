@@ -26,30 +26,39 @@ jobs:
       - name: Fetch Wine ${{ env.WINE_TAG }}
         run: git clone --depth 1 --branch "$WINE_TAG" https://github.com/wine-mirror/wine.git wine
 
-      - name: Apply patch
-        run: git -C wine apply ../mfplat-shared-textures.patch
+      - name: Apply patches
+        run: |
+          git -C wine apply ../mfplat-shared-textures.patch
+          git -C wine apply ../mfplat-reuse-linear-buffers.patch
+          git -C wine apply ../mfreadwrite-skip-redundant-copy.patch
 
       - name: Configure
         run: cd wine && ./configure --enable-win64 --without-x --without-freetype --disable-tests
 
-      - name: Build mfplat.dll
-        run: cd wine && make -j"$(nproc)" dlls/mfplat/x86_64-windows/mfplat.dll && cp dlls/mfplat/x86_64-windows/mfplat.dll ..
+      - name: Build mfplat.dll and mfreadwrite.dll
+        run: |
+          cd wine
+          make -j"$(nproc)" dlls/mfplat/x86_64-windows/mfplat.dll dlls/mfreadwrite/x86_64-windows/mfreadwrite.dll
+          cp dlls/mfplat/x86_64-windows/mfplat.dll dlls/mfreadwrite/x86_64-windows/mfreadwrite.dll ..
 
       - name: Checksums
-        run: sha256sum mfplat.dll | tee SHA256SUMS
+        run: sha256sum mfplat.dll mfreadwrite.dll | tee SHA256SUMS
 
       - uses: actions/upload-artifact@v4
         with:
-          name: mfplat.dll
+          name: dlls
           path: |
             mfplat.dll
+            mfreadwrite.dll
             SHA256SUMS
 
       - name: Attest build provenance
         if: startsWith(github.ref, 'refs/tags/v')
         uses: actions/attest-build-provenance@v2
         with:
-          subject-path: mfplat.dll
+          subject-path: |
+            mfplat.dll
+            mfreadwrite.dll
 
       - name: Release
         if: startsWith(github.ref, 'refs/tags/v')
@@ -57,4 +66,5 @@ jobs:
         with:
           files: |
             mfplat.dll
+            mfreadwrite.dll
             SHA256SUMS
