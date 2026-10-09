@@ -26,11 +26,11 @@ the allocator's textures when usage is `D3D11_USAGE_DEFAULT` and no sharing
 flag was requested. Related upstream threads: Wine bug 50277, merge
 requests 11398 and 11404.
 
-This is a **workaround**. Wine's own test shows that on Windows the bare
-allocator does not share by default, so the proper upstream fix will likely
-live in the source reader path; it is being worked out with a test-first
-merge request. Until then this patch is the simplest thing that makes the
-videos render.
+This is a **workaround**, not an upstream fix. Wine's own test shows that on
+Windows the bare allocator does not share by default, so the proper fix
+probably belongs in the source reader path and still needs to be confirmed
+on Windows first. Nothing has been submitted upstream; this patch is simply
+the smallest change that makes the videos render.
 
 ## Download and verify
 
